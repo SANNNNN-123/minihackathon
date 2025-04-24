@@ -30,6 +30,42 @@
   }
 }
 
+@keyframes floatingContainer {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes windowGlow {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes starsShimmer {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+
 body,
 html {
   margin: 0;
@@ -47,44 +83,68 @@ body {
   align-items: center;
   transition: background-color 0.5s ease;
   position: relative;
+  min-height: 100vh;
+  overflow: hidden;
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 300px;
-  background-color: #f0f9ff;
-  transition: opacity 0.5s ease;
-  z-index: -2;
-  opacity: 1;
-}
-
+/* Optional: Can comment these out if the direct image elements work better */
+body::before,
 body::after {
   content: "";
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 300px;
-  background-color: #1a202c;
-  transition: opacity 0.5s ease;
-  z-index: -2;
-  opacity: 0;
+  height: 350px;
+  background-repeat: repeat-x;
+  background-position: bottom center;
+  background-size: auto 350px;
+  transition: opacity 0.8s ease, transform 1.2s ease;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0; /* Start with both hidden, let the direct elements handle the display */
+}
+
+body::before {
+  background-image: url('/office-day.png');
+  transform: translateZ(0) scale(1.05);
+}
+
+body::after {
+  background-image: url('/office-night.png');
+  transform: translateZ(0) scale(1.0);
 }
 
 body.night {
-  background-color: #2c3149;
+  background-color: #1e2235;
 }
 
 body.night::before {
   opacity: 0;
+  transform: translateZ(0) scale(1.0);
 }
 
 body.night::after {
-  opacity: 1;
+  opacity: 0; /* Let the direct element handle it */
+  transform: translateZ(0) scale(1.05);
+  box-shadow: inset 0 15px 25px rgba(0, 0, 0, 0.5);
+}
+
+/* Added styles for direct background elements */
+.day-background,
+.night-background {
+  pointer-events: none !important;
+  will-change: opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.day-background {
+  transform: translateZ(0) scale(1.05);
+}
+
+.night-background {
+  box-shadow: inset 0 15px 25px rgba(0, 0, 0, 0.5);
 }
 
 .container {
@@ -96,6 +156,11 @@ body.night::after {
   position: relative;
   z-index: 1;
   margin-bottom: 100px;
+  transition: all 0.8s ease;
+}
+
+body.night .container {
+  animation: floatingContainer 8s ease-in-out infinite;
 }
 
 .datetime-container {
@@ -325,6 +390,27 @@ input:checked + .slider .cloud {
 
 input:checked + .slider .star {
   opacity: 1;
+  animation: starsShimmer 3s ease-in-out infinite;
+}
+
+input:checked + .slider .star1 {
+  animation-delay: 0s;
+}
+
+input:checked + .slider .star2 {
+  animation-delay: 0.5s;
+}
+
+input:checked + .slider .star3 {
+  animation-delay: 1s;
+}
+
+input:checked + .slider .star4 {
+  animation-delay: 1.5s;
+}
+
+input:checked + .slider .star5 {
+  animation-delay: 2s;
 }
 
 .star1 {
@@ -363,175 +449,18 @@ body.night .label {
   color: #eee;
 }
 
-/* Office with people */
-.person {
-  position: fixed;
-  bottom: 50px;
-  width: 30px;
-  height: 60px;
-  background-color: #4a5568;
-  border-radius: 15px 15px 0 0;
-  transition: opacity 0.5s ease;
-  z-index: -1;
+/* Hide office elements as we'll use the image instead */
+.person, .desk, .computer, .lamp {
+  display: none;
 }
 
-.person::before {
-  content: "";
-  position: absolute;
-  top: -15px;
-  left: 5px;
-  width: 20px;
-  height: 20px;
-  background-color: #f8d7da;
-  border-radius: 50%;
+/* Window illumination glow effect */
+.window-illumination {
+  pointer-events: none;
+  animation: windowGlow 5s ease-in-out infinite;
 }
 
-.person.p1 {
-  left: 15%;
-}
-
-.person.p2 {
-  left: 30%;
-  bottom: 60px;
-}
-
-.person.p3 {
-  left: 48%;
-  height: 50px;
-}
-
-.person.p4 {
-  left: 63%;
-  bottom: 55px;
-}
-
-.person.p5 {
-  left: 78%;
-}
-
-.desk {
-  position: fixed;
-  bottom: 0;
-  width: 150px;
-  height: 40px;
-  background-color: #805a3b;
-  border-radius: 5px 5px 0 0;
-  box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.1);
-  z-index: -1;
-}
-
-.desk.d1 {
-  left: 10%;
-}
-
-.desk.d2 {
-  left: 25%;
-}
-
-.desk.d3 {
-  left: 43%;
-}
-
-.desk.d4 {
-  left: 58%;
-}
-
-.desk.d5 {
-  left: 73%;
-}
-
-.computer {
-  position: fixed;
-  width: 40px;
-  height: 30px;
-  background-color: #2d3748;
-  border-radius: 5px;
-  bottom: 40px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  z-index: -1;
-}
-
-.computer::before {
-  content: "";
-  position: absolute;
-  bottom: -10px;
-  left: 15px;
-  width: 10px;
-  height: 10px;
-  background-color: #4a5568;
-}
-
-.computer.c1 {
-  left: 13%;
-}
-
-.computer.c2 {
-  left: 28%;
-}
-
-.computer.c3 {
-  left: 46%;
-}
-
-.computer.c4 {
-  left: 61%;
-}
-
-.computer.c5 {
-  left: 76%;
-}
-
-.lamp {
-  position: fixed;
-  bottom: 40px;
-  width: 10px;
-  height: 20px;
-  background-color: #718096;
-  border-radius: 2px;
-  z-index: -1;
-}
-
-.lamp::before {
-  content: "";
-  position: absolute;
-  top: -8px;
-  left: -5px;
-  width: 20px;
-  height: 8px;
-  background-color: #ecc94b;
-  border-radius: 10px 10px 0 0;
-}
-
-.lamp.l1 {
-  left: 18%;
-}
-
-.lamp.l2 {
-  left: 33%;
-}
-
-.lamp.l3 {
-  left: 51%;
-}
-
-.lamp.l4 {
-  left: 66%;
-}
-
-.lamp.l5 {
-  left: 81%;
-}
-
-body.night .person,
-body.night .computer::before {
-  opacity: 0;
-}
-
-body.night .computer {
-  animation: screenGlow 2s infinite;
-}
-
-body.night .lamp::before {
-  background-color: #ffe15e;
-  box-shadow: 0 0 10px #ffe15e, 0 0 20px rgba(255, 225, 94, 0.5);
+/* Night mode general adjustments */
+body.night .switch {
+  box-shadow: 0 3px 20px rgba(0, 0, 0, 0.3);
 }
