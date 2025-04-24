@@ -19,27 +19,22 @@ export default function Home() {
   }, []);
 
   return (
-    <>
-      <div className="container">
-        <label className="switch">
-          <input type="checkbox" id="toggleSwitch" />
-          <div className="slider">
-            <div className="sun"></div>
-            <div className="moon"></div>
-            <div className="cloud cloud1"></div>
-            <div className="cloud cloud2"></div>
-            <div className="star star1"></div>
-            <div className="star star2"></div>
-            <div className="star star3"></div>
-            <div className="star star4"></div>
-            <div className="star star5"></div>
-          </div>
-        </label>
-      </div>
+    <div className="container">
+      <label className="switch">
+        <input type="checkbox" id="toggleSwitch" />
+        <div className="slider">
+          <div className="sun"></div>
+          <div className="moon"></div>
+          <div className="cloud cloud1"></div>
+          <div className="cloud cloud2"></div>
+          <div className="star star1"></div>
+          <div className="star star2"></div>
+          <div className="star star3"></div>
+          <div className="star star4"></div>
+          <div className="star star5"></div>
+        </div>
+      </label>
       <div className="label">Click the switch to toggle day/night mode</div>
-      <div className="copyright">
-        Check out my profile © <a href="https://saravanancodes.netlify.app/" target="_blank" style={{ color: "white" }}>Saravanan</a>
-      </div>
-    </>
+    </div>
   );
 }
