@@ -26,9 +26,9 @@ export default function Home() {
     
     // Format date based on mode
     const dateString = now.toLocaleDateString('en-US', {
-      weekday: isNightMode ? 'long' : 'short',
-      month: isNightMode ? 'long' : 'short',
-      day: 'numeric'
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long'
     });
 
     setCurrentTime(timeString);
@@ -216,15 +216,40 @@ export default function Home() {
         animation: 'none'   // Disable any animations
       }}>
         <div className="datetime-container" style={{ 
-          marginBottom: '2rem', 
+          marginBottom: '1rem', 
           position: 'relative', 
           zIndex: 2,
           textAlign: 'center',
-          transform: 'none',  // Prevent any transforms
-          animation: 'none'   // Disable any animations
+          transform: 'none',
+          animation: 'none',
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          padding: '1.5rem 2rem',
+          borderRadius: '13px',
+          backdropFilter: 'blur(8px)',
+          width: '90%',
+          maxWidth: '400px'
         }}>
-          <div className="time-display">{currentTime}</div>
-          <div className="date-display">{currentDate}</div>
+          <div className="time-display" style={{
+            fontSize: 'clamp(2rem, 8vw, 3.5rem)',
+            fontWeight: '700',
+            color: '#ffffff',
+            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            letterSpacing: '-1px',
+            marginBottom: '0.5rem',
+            textShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
+            whiteSpace: 'nowrap',
+            lineHeight: '1'
+          }}>{currentTime}</div>
+          <div className="date-display" style={{
+            fontSize: 'clamp(1rem, 4vw, 1.25rem)',
+            color: '#ffffff',
+            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            fontWeight: '500',
+            opacity: 0.9,
+            letterSpacing: '0.5px',
+            textShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+            whiteSpace: 'nowrap'
+          }}>{currentDate}</div>
         </div>
         
         <label className="switch" style={{ 
