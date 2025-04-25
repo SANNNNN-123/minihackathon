@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import Image from "next/image";
 
 export default function Home() {
   const [currentTime, setCurrentTime] = useState("");
@@ -123,7 +124,7 @@ export default function Home() {
       }
     };
 
-    const handleToggle = (e: Event) => {
+    const handleToggle = () => {
       if (!document.startViewTransition) {
         switchTheme();
         return;
@@ -149,48 +150,56 @@ export default function Home() {
         toggleSwitch.removeEventListener("change", handleToggle);
       }
     };
-  }, []);
+  }, [isNightMode]);
 
   return (
     <>
-      {/* Actual background images as fallback */}
-      <div 
-        className="day-background"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          backgroundImage: 'url("/office-day.png")',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          backgroundSize: 'cover',
-          zIndex: -1,
-          transition: 'opacity 0.8s ease',
+      {/* Full screen office images */}
+      <div style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: 1,
+        overflow: 'hidden'
+      }}>
+        <div className="day-background" style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
           opacity: isNightMode ? 0 : 1,
-          pointerEvents: 'none'
-        }}
-      />
-      <div 
-        className="night-background"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          backgroundImage: 'url("/office-night.png")',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          backgroundSize: 'cover',
-          zIndex: -1,
-          transition: 'opacity 0.8s ease',
+          transition: 'opacity 0.8s ease'
+        }}>
+          <Image
+            src="/office-day.png"
+            alt="Office Day"
+            fill
+            style={{
+              objectFit: 'cover'
+            }}
+            priority
+          />
+        </div>
+        <div className="night-background" style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
           opacity: isNightMode ? 1 : 0,
-          pointerEvents: 'none'
-        }}
-      />
-      
+          transition: 'opacity 0.8s ease'
+        }}>
+          <Image
+            src="/office-night.png"
+            alt="Office Night"
+            fill
+            style={{
+              objectFit: 'cover'
+            }}
+            priority
+          />
+        </div>
+      </div>
+
       <div className="container" style={{
         position: 'fixed',
         top: 0,
@@ -261,48 +270,6 @@ export default function Home() {
             <div className="star star5"></div>
           </div>
         </label>
-      </div>
-
-      {/* Full screen office images */}
-      <div style={{ 
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: 1,
-        overflow: 'hidden',
-        transform: 'none',  // Prevent any transforms
-        animation: 'none'   // Disable any animations
-      }}>
-        <img 
-          src="/office-day.png" 
-          alt="Office Day" 
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            transition: 'opacity 0.8s ease',
-            opacity: isNightMode ? 0 : 1,
-            transform: 'none',  // Prevent any transforms
-            animation: 'none'   // Disable any animations
-          }}
-        />
-        <img 
-          src="/office-night.png" 
-          alt="Office Night" 
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            transition: 'opacity 0.8s ease',
-            opacity: isNightMode ? 1 : 0,
-            transform: 'none',  // Prevent any transforms
-            animation: 'none'   // Disable any animations
-          }}
-        />
       </div>
 
       {/* Office Elements */}
