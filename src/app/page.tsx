@@ -34,6 +34,8 @@ export default function Home() {
 
   // Start clock ticking - runs in real-time always
   const startClockTicker = useCallback(() => {
+    updateTime(); // Update immediately
+    
     // Clear any existing ticker
     if (clockTickerRef.current) {
       clearInterval(clockTickerRef.current);
@@ -41,6 +43,13 @@ export default function Home() {
 
     // Start a new ticker that updates every second
     clockTickerRef.current = setInterval(updateTime, 1000);
+
+    // Return cleanup function
+    return () => {
+      if (clockTickerRef.current) {
+        clearInterval(clockTickerRef.current);
+      }
+    };
   }, [updateTime]);
 
   // Create illuminated window effect for night mode
@@ -73,21 +82,11 @@ export default function Home() {
     }, 10);
   }, []);
 
-  // Initialize clock ticker that updates every second
+  // Initialize clock ticker
   useEffect(() => {
-    // Initialize time
-    updateTime();
-    
-    // Start the clock ticker
-    startClockTicker();
-    
-    // Cleanup
-    return () => {
-      if (clockTickerRef.current) {
-        clearInterval(clockTickerRef.current);
-      }
-    };
-  }, [updateTime, startClockTicker]); // Add proper dependencies
+    const cleanup = startClockTicker();
+    return cleanup;
+  }, [startClockTicker]);
 
   useEffect(() => {
     const toggleSwitch = document.getElementById("toggleSwitch") as HTMLInputElement;
@@ -109,61 +108,48 @@ export default function Home() {
     }
 
     const switchTheme = () => {
-      if (toggleSwitch.checked) {
-        body.classList.add("night");
-        body.classList.add("dark");
-        setIsNightMode(true);
-        
-        setTimeout(() => {
-          const nightBg = document.querySelector('.night-background') as HTMLElement;
-          if (nightBg) {
-            nightBg.style.opacity = '1';
-          }
-        }, 0);
+      const isNight = toggleSwitch.checked;
+      if (isNight) {
+        body.classList.add("night", "dark");
       } else {
-        body.classList.remove("night");
-        body.classList.remove("dark");
-        setIsNightMode(false);
-        
-        setTimeout(() => {
-          const dayBg = document.querySelector('.day-background') as HTMLElement;
-          if (dayBg) {
-            dayBg.style.opacity = '1';
-          }
-        }, 0);
+        body.classList.remove("night", "dark");
       }
+      setIsNightMode(isNight);
+
+      // Update background immediately
+      const bgElement = document.querySelector(isNight ? '.night-background' : '.day-background') as HTMLElement;
+      if (bgElement) {
+        bgElement.style.opacity = '1';
+      }
+    };
+
+    const handleToggle = (e: Event) => {
+      if (!document.startViewTransition) {
+        switchTheme();
+        return;
+      }
+
+      // Prevent any bouncing by disabling the switch temporarily
+      toggleSwitch.disabled = true;
+
+      document.startViewTransition(() => {
+        switchTheme();
+      }).finished.finally(() => {
+        // Re-enable the switch after transition
+        toggleSwitch.disabled = false;
+      });
     };
 
     if (toggleSwitch) {
-      toggleSwitch.addEventListener("change", async function () {
-        // Check if the browser supports view transitions
-        if (!document.startViewTransition) {
-          switchTheme();
-          return;
-        }
-
-        // Start the view transition
-        const transition = document.startViewTransition(() => {
-          switchTheme();
-        });
-
-        try {
-          // Wait for the transition to finish
-          await transition.finished;
-        } catch (error) {
-          // Handle any errors during transition
-          console.error('View transition failed:', error);
-        }
-      });
+      toggleSwitch.addEventListener("change", handleToggle);
     }
 
-    // Cleanup
     return () => {
-      if (clockTickerRef.current) {
-        clearInterval(clockTickerRef.current);
+      if (toggleSwitch) {
+        toggleSwitch.removeEventListener("change", handleToggle);
       }
     };
-  }, [isNightMode]); // Add isNightMode as dependency
+  }, []);
 
   return (
     <>
