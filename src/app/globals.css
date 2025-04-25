@@ -137,6 +137,13 @@ body.night::after {
   will-change: opacity;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 400px;
+  z-index: 0;
+  border: 2px dashed red; /* DEBUG: Remove after confirming visibility */
 }
 
 .day-background {

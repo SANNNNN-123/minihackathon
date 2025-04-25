@@ -13,69 +13,29 @@ export default function Home() {
   const [illuminationIntensity, setIlluminationIntensity] = useState(0);
 
   // Format time based on day/night mode
-  const updateTime = (forceHour?: number, forceMinute?: number, forceSecond?: number) => {
+  const updateTime = () => {
     const now = new Date();
     
-    // If force values are provided, use them instead of actual time
-    if (forceHour !== undefined) now.setHours(forceHour);
-    if (forceMinute !== undefined) now.setMinutes(forceMinute);
-    if (forceSecond !== undefined) now.setSeconds(forceSecond);
+    // Always use current real time
+    const timeString = now.toLocaleTimeString('en-US', { 
+      hour12: true,
+      hour: 'numeric', 
+      minute: '2-digit',
+      second: '2-digit'
+    });
     
-    let timeString;
-    let dateString;
-
-    if (isNightMode) {
-      // Always show 12:00:00 PM in night mode if not transitioning
-      if (!isTransitioning && forceHour === undefined) {
-        now.setHours(12, 0, 0);
-      }
-      
-      // 12-hour format for night mode
-      timeString = now.toLocaleTimeString('en-US', { 
-        hour12: true,
-        hour: 'numeric', 
-        minute: '2-digit',
-        second: '2-digit'
-      });
-      
-      dateString = now.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric'
-      });
-    } else {
-      // Use current real time for day mode (AM) instead of fixed 8:00 AM
-      // Only use 8:00 AM during transitions
-      if (isTransitioning && forceHour !== undefined) {
-        // Use the forced hour during transitions
-      } else {
-        // Otherwise use real current time
-        const realNow = new Date();
-        now.setHours(realNow.getHours(), realNow.getMinutes(), realNow.getSeconds());
-      }
-      
-      // 12-hour format for day mode
-      timeString = now.toLocaleTimeString('en-US', { 
-        hour12: true,
-        hour: 'numeric', 
-        minute: '2-digit',
-        second: '2-digit'
-      });
-      
-      dateString = now.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric'
-      });
-    }
+    // Format date based on mode
+    const dateString = now.toLocaleDateString('en-US', {
+      weekday: isNightMode ? 'long' : 'short',
+      month: isNightMode ? 'long' : 'short',
+      day: 'numeric'
+    });
 
     setCurrentTime(timeString);
     setCurrentDate(dateString);
-    
-    return { hour: now.getHours(), minute: now.getMinutes(), second: now.getSeconds() };
   };
 
-  // Start clock ticking - runs in real-time when in day mode
+  // Start clock ticking - runs in real-time always
   const startClockTicker = () => {
     // Clear any existing ticker
     if (clockTickerRef.current) {
@@ -83,61 +43,7 @@ export default function Home() {
     }
 
     // Start a new ticker that updates every second
-    clockTickerRef.current = setInterval(() => {
-      if (!isTransitioning) {
-        updateTime();
-      }
-    }, 1000);
-  };
-
-  // Animate time change when toggling modes
-  const animateTimeTransition = (fromHour: number, toHour: number) => {
-    setIsTransitioning(true);
-    
-    // Clear any existing transition
-    if (transitionIntervalRef.current) {
-      clearInterval(transitionIntervalRef.current);
-    }
-    
-    // Initialize transition time
-    const current = { ...transitionTimeRef.current };
-    current.hour = fromHour;
-    
-    // Create a faster ticking clock effect
-    transitionIntervalRef.current = setInterval(() => {
-      // Increment time
-      current.second += 30; // Fast forward by 30 seconds
-      
-      if (current.second >= 60) {
-        current.second = 0;
-        current.minute += 1;
-      }
-      
-      if (current.minute >= 60) {
-        current.minute = 0;
-        current.hour += 1;
-      }
-      
-      // If hour goes beyond 23, reset to 0
-      if (current.hour >= 24) {
-        current.hour = 0;
-      }
-      
-      // Update display
-      transitionTimeRef.current = current;
-      updateTime(current.hour, current.minute, current.second);
-      
-      // Check if we've reached the target hour
-      if ((fromHour < toHour && current.hour >= toHour) || 
-          (fromHour > toHour && (current.hour >= 24 || current.hour >= toHour))) {
-        clearInterval(transitionIntervalRef.current!);
-        transitionIntervalRef.current = null;
-        setIsTransitioning(false);
-        
-        // Set the final time
-        updateTime(toHour, 0, 0);
-      }
-    }, 50); // Update very quickly for animation effect
+    clockTickerRef.current = setInterval(updateTime, 1000);
   };
 
   // Create illuminated window effect for night mode
@@ -184,12 +90,11 @@ export default function Home() {
         clearInterval(clockTickerRef.current);
       }
     };
-  }, [isNightMode]); // Restart ticker when mode changes
+  }, [isNightMode]); // Keep the dependency to update date format when mode changes
 
   useEffect(() => {
     const toggleSwitch = document.getElementById("toggleSwitch") as HTMLInputElement;
     const body = document.body;
-    const people = document.querySelectorAll('.person');
 
     // Initialize the UI state based on default mode
     if (isNightMode) {
@@ -204,13 +109,10 @@ export default function Home() {
       }
     }
 
-    // Add subtle animations to people
-    people.forEach((person, index) => {
-      const delay = index * 0.5;
-      const duration = 2 + Math.random() * 2;
-      
-      // Slight bobbing animation
-      (person as HTMLElement).style.animation = `personBobbing ${duration}s ease-in-out ${delay}s infinite alternate`;
+    // Remove all people animations
+    const people = document.querySelectorAll('.person');
+    people.forEach((person) => {
+      (person as HTMLElement).style.animation = 'none';
     });
 
     if (toggleSwitch) {
@@ -220,16 +122,8 @@ export default function Home() {
           body.classList.add("night");
           setIsNightMode(true);
           
-          // Get current time for transition start
-          const now = new Date();
-          const currentHour = now.getHours();
-          animateTimeTransition(currentHour, 12); // Animate from current hour to 12pm
-          
           // Add slight delay before starting any night effects
           setTimeout(() => {
-            // Force redraw to ensure background images are updated
-            body.style.animation = 'none';
-            
             // Create a flash effect on the night image
             const nightBg = document.querySelector('.night-background') as HTMLElement;
             if (nightBg) {
@@ -238,25 +132,14 @@ export default function Home() {
                 nightBg.style.opacity = '1';
               }, 100);
             }
-            
-            setTimeout(() => {
-              body.style.animation = '';
-            }, 10);
           }, 500);
         } else {
           // Switching to day mode
           body.classList.remove("night");
           setIsNightMode(false);
           
-          // Get current real time to transition to
-          const now = new Date();
-          const currentHour = now.getHours();
-          animateTimeTransition(12, currentHour); // Animate from 12pm to current hour
-          
-          // Force redraw to ensure background images are updated
+          // Add slight delay before starting any day effects
           setTimeout(() => {
-            body.style.animation = 'none';
-            
             // Create a flash effect on the day image
             const dayBg = document.querySelector('.day-background') as HTMLElement;
             if (dayBg) {
@@ -265,23 +148,13 @@ export default function Home() {
                 dayBg.style.opacity = '1';
               }, 100);
             }
-            
-            setTimeout(() => {
-              body.style.animation = '';
-            }, 10);
           }, 500);
         }
       });
     }
 
-    // Set initial time
-    updateTime();
-    
     // Cleanup
     return () => {
-      if (transitionIntervalRef.current) {
-        clearInterval(transitionIntervalRef.current);
-      }
       if (clockTickerRef.current) {
         clearInterval(clockTickerRef.current);
       }
@@ -295,33 +168,32 @@ export default function Home() {
         className="day-background"
         style={{
           position: 'fixed',
-          bottom: 0,
+          top: 0,
           left: 0,
-          width: '100%',
-          height: '350px',
+          width: '100vw',
+          height: '100vh',
           backgroundImage: 'url("/office-day.png")',
-          backgroundRepeat: 'repeat-x',
-          backgroundPosition: 'bottom center',
-          backgroundSize: 'auto 350px',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          backgroundSize: 'cover',
           zIndex: -1,
           transition: 'opacity 0.8s ease',
           opacity: isNightMode ? 0 : 1,
           pointerEvents: 'none'
         }}
       />
-      
       <div 
         className="night-background"
         style={{
           position: 'fixed',
-          bottom: 0,
+          top: 0,
           left: 0,
-          width: '100%',
-          height: '350px',
+          width: '100vw',
+          height: '100vh',
           backgroundImage: 'url("/office-night.png")',
-          backgroundRepeat: 'repeat-x',
-          backgroundPosition: 'bottom center',
-          backgroundSize: 'auto 350px',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          backgroundSize: 'cover',
           zIndex: -1,
           transition: 'opacity 0.8s ease',
           opacity: isNightMode ? 1 : 0,
@@ -329,13 +201,38 @@ export default function Home() {
         }}
       />
       
-      <div className="container">
-        <div className="datetime-container">
+      <div className="container" style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 2,
+        transform: 'none',  // Prevent any transforms
+        animation: 'none'   // Disable any animations
+      }}>
+        <div className="datetime-container" style={{ 
+          marginBottom: '2rem', 
+          position: 'relative', 
+          zIndex: 2,
+          textAlign: 'center',
+          transform: 'none',  // Prevent any transforms
+          animation: 'none'   // Disable any animations
+        }}>
           <div className="time-display">{currentTime}</div>
           <div className="date-display">{currentDate}</div>
         </div>
         
-        <label className="switch">
+        <label className="switch" style={{ 
+          position: 'relative', 
+          zIndex: 2,
+          transform: 'none',  // Prevent any transforms
+          animation: 'none'   // Disable any animations
+        }}>
           <input type="checkbox" id="toggleSwitch" />
           <div className="slider">
             <div className="sun"></div>
@@ -349,7 +246,48 @@ export default function Home() {
             <div className="star star5"></div>
           </div>
         </label>
-        <div className="label">Toggle between busy day and quiet night</div>
+      </div>
+
+      {/* Full screen office images */}
+      <div style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: 1,
+        overflow: 'hidden',
+        transform: 'none',  // Prevent any transforms
+        animation: 'none'   // Disable any animations
+      }}>
+        <img 
+          src="/office-day.png" 
+          alt="Office Day" 
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            transition: 'opacity 0.8s ease',
+            opacity: isNightMode ? 0 : 1,
+            transform: 'none',  // Prevent any transforms
+            animation: 'none'   // Disable any animations
+          }}
+        />
+        <img 
+          src="/office-night.png" 
+          alt="Office Night" 
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            transition: 'opacity 0.8s ease',
+            opacity: isNightMode ? 1 : 0,
+            transform: 'none',  // Prevent any transforms
+            animation: 'none'   // Disable any animations
+          }}
+        />
       </div>
 
       {/* Office Elements */}
