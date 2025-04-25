@@ -3,6 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --circle-center: 50% 50%;
+  --circle-size: 0%;
 }
 
 @theme inline {
@@ -470,4 +473,55 @@ body.night .label {
 /* Night mode general adjustments */
 body.night .switch {
   box-shadow: 0 3px 20px rgba(0, 0, 0, 0.3);
+}
+
+::view-transition-group(root) {
+  animation-duration: 1s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::view-transition-old(root) {
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  mix-blend-mode: normal;
+}
+
+@keyframes circle-in {
+  from {
+    clip-path: circle(var(--circle-size) at var(--circle-center));
+  }
+  to {
+    clip-path: circle(125% at var(--circle-center));
+  }
+}
+
+@keyframes circle-out {
+  from {
+    clip-path: circle(125% at var(--circle-center));
+  }
+  to {
+    clip-path: circle(var(--circle-size) at var(--circle-center));
+  }
+}
+
+::view-transition-old(root) {
+  animation: 0.5s cubic-bezier(0.4, 0, 0.2, 1) both circle-out;
+}
+
+::view-transition-new(root) {
+  animation: 0.5s cubic-bezier(0.4, 0, 0.2, 1) both circle-in;
+}
+
+/* Ensure the transition container takes full viewport */
+::view-transition-group(*) {
+  animation: none;
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }

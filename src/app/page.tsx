@@ -99,56 +99,69 @@ export default function Home() {
     // Initialize the UI state based on default mode
     if (isNightMode) {
       body.classList.add("night");
+      body.classList.add("dark");
       if (toggleSwitch) {
         toggleSwitch.checked = true;
       }
     } else {
       body.classList.remove("night");
+      body.classList.remove("dark");
       if (toggleSwitch) {
         toggleSwitch.checked = false;
       }
     }
 
-    // Remove all people animations
-    const people = document.querySelectorAll('.person');
-    people.forEach((person) => {
-      (person as HTMLElement).style.animation = 'none';
-    });
+    const switchTheme = () => {
+      if (toggleSwitch.checked) {
+        body.classList.add("night");
+        setIsNightMode(true);
+        
+        setTimeout(() => {
+          const nightBg = document.querySelector('.night-background') as HTMLElement;
+          if (nightBg) {
+            nightBg.style.opacity = '1';
+          }
+        }, 0);
+      } else {
+        body.classList.remove("night");
+        setIsNightMode(false);
+        
+        setTimeout(() => {
+          const dayBg = document.querySelector('.day-background') as HTMLElement;
+          if (dayBg) {
+            dayBg.style.opacity = '1';
+          }
+        }, 0);
+      }
+    };
 
     if (toggleSwitch) {
-      toggleSwitch.addEventListener("change", function () {
-        if (this.checked) {
-          // Switching to night mode
-          body.classList.add("night");
-          setIsNightMode(true);
-          
-          // Add slight delay before starting any night effects
-          setTimeout(() => {
-            // Create a flash effect on the night image
-            const nightBg = document.querySelector('.night-background') as HTMLElement;
-            if (nightBg) {
-              nightBg.style.opacity = '0.3';
-              setTimeout(() => {
-                nightBg.style.opacity = '1';
-              }, 100);
-            }
-          }, 500);
-        } else {
-          // Switching to day mode
-          body.classList.remove("night");
-          setIsNightMode(false);
-          
-          // Add slight delay before starting any day effects
-          setTimeout(() => {
-            // Create a flash effect on the day image
-            const dayBg = document.querySelector('.day-background') as HTMLElement;
-            if (dayBg) {
-              dayBg.style.opacity = '0.3';
-              setTimeout(() => {
-                dayBg.style.opacity = '1';
-              }, 100);
-            }
-          }, 500);
+      toggleSwitch.addEventListener("change", async function () {
+        // Check if the browser supports view transitions
+        if (!document.startViewTransition) {
+          switchTheme();
+          return;
+        }
+
+        // Get the toggle switch position for the circular animation
+        const rect = toggleSwitch.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+
+        // Apply the custom property for the circle center
+        document.documentElement.style.setProperty('--circle-center', `${x}px ${y}px`);
+
+        // Start the view transition
+        const transition = document.startViewTransition(() => {
+          switchTheme();
+        });
+
+        try {
+          // Wait for the transition to finish
+          await transition.finished;
+        } catch (error) {
+          // Handle any errors during transition
+          console.error('View transition failed:', error);
         }
       });
     }
