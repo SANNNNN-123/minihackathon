@@ -215,9 +215,9 @@ body.night .date-display {
   position: relative;
   width: 300px;
   height: 120px;
-  border-radius: 60px;
+  border-radius: 80px;
   cursor: pointer;
-  transition: all 0.4s ease;
+  transition: all 0.2s ease;
   box-shadow: 0 3px 20px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   background-color: #d3e1ff;
@@ -475,53 +475,32 @@ body.night .switch {
   box-shadow: 0 3px 20px rgba(0, 0, 0, 0.3);
 }
 
+/* Update view transition styles */
 ::view-transition-group(root) {
   animation-duration: 1s;
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-::view-transition-old(root) {
-  mix-blend-mode: normal;
-}
-
 ::view-transition-new(root) {
-  mix-blend-mode: normal;
+  mask: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="white"/></svg>')
+    center / 0 no-repeat;
+  animation: scale 1s;
 }
 
-@keyframes circle-in {
-  from {
-    clip-path: circle(var(--circle-size) at var(--circle-center));
-  }
-  to {
-    clip-path: circle(125% at var(--circle-center));
-  }
-}
-
-@keyframes circle-out {
-  from {
-    clip-path: circle(125% at var(--circle-center));
-  }
-  to {
-    clip-path: circle(var(--circle-size) at var(--circle-center));
-  }
-}
-
-::view-transition-old(root) {
-  animation: 0.5s cubic-bezier(0.4, 0, 0.2, 1) both circle-out;
-}
-
-::view-transition-new(root) {
-  animation: 0.5s cubic-bezier(0.4, 0, 0.2, 1) both circle-in;
-}
-
-/* Ensure the transition container takes full viewport */
-::view-transition-group(*) {
+::view-transition-old(root),
+.dark::view-transition-old(root) {
   animation: none;
-  height: 100vh;
-  width: 100vw;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  z-index: -1;
 }
+
+.dark::view-transition-new(root) {
+  animation: scale 1s;
+}
+
+@keyframes scale {
+  to {
+    mask-size: 200vmax;
+  }
+}
+
+/* Remove old keyframes that are no longer needed */

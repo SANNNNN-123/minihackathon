@@ -1,19 +1,16 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 export default function Home() {
   const [currentTime, setCurrentTime] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [isNightMode, setIsNightMode] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const transitionTimeRef = useRef({ hour: 8, minute: 0, second: 0 });
-  const transitionIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const clockTickerRef = useRef<NodeJS.Timeout | null>(null);
   const [illuminationIntensity, setIlluminationIntensity] = useState(0);
 
   // Format time based on day/night mode
-  const updateTime = () => {
+  const updateTime = useCallback(() => {
     const now = new Date();
     
     // Always use current real time
@@ -33,10 +30,10 @@ export default function Home() {
 
     setCurrentTime(timeString);
     setCurrentDate(dateString);
-  };
+  }, []); // No dependencies needed as it doesn't use any external values
 
   // Start clock ticking - runs in real-time always
-  const startClockTicker = () => {
+  const startClockTicker = useCallback(() => {
     // Clear any existing ticker
     if (clockTickerRef.current) {
       clearInterval(clockTickerRef.current);
@@ -44,7 +41,7 @@ export default function Home() {
 
     // Start a new ticker that updates every second
     clockTickerRef.current = setInterval(updateTime, 1000);
-  };
+  }, [updateTime]);
 
   // Create illuminated window effect for night mode
   useEffect(() => {
@@ -90,7 +87,7 @@ export default function Home() {
         clearInterval(clockTickerRef.current);
       }
     };
-  }, [isNightMode]); // Keep the dependency to update date format when mode changes
+  }, [updateTime, startClockTicker]); // Add proper dependencies
 
   useEffect(() => {
     const toggleSwitch = document.getElementById("toggleSwitch") as HTMLInputElement;
@@ -114,6 +111,7 @@ export default function Home() {
     const switchTheme = () => {
       if (toggleSwitch.checked) {
         body.classList.add("night");
+        body.classList.add("dark");
         setIsNightMode(true);
         
         setTimeout(() => {
@@ -124,6 +122,7 @@ export default function Home() {
         }, 0);
       } else {
         body.classList.remove("night");
+        body.classList.remove("dark");
         setIsNightMode(false);
         
         setTimeout(() => {
@@ -142,14 +141,6 @@ export default function Home() {
           switchTheme();
           return;
         }
-
-        // Get the toggle switch position for the circular animation
-        const rect = toggleSwitch.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
-
-        // Apply the custom property for the circle center
-        document.documentElement.style.setProperty('--circle-center', `${x}px ${y}px`);
 
         // Start the view transition
         const transition = document.startViewTransition(() => {
@@ -172,7 +163,7 @@ export default function Home() {
         clearInterval(clockTickerRef.current);
       }
     };
-  }, []);
+  }, [isNightMode]); // Add isNightMode as dependency
 
   return (
     <>
