@@ -169,7 +169,9 @@ export default function Home() {
           width: '100%',
           height: '100%',
           opacity: isNightMode ? 0 : 1,
-          transition: 'opacity 0.8s ease'
+          transition: 'opacity 0.8s ease',
+          border: 'none',
+          outline: 'none'
         }}>
           <Image
             src="/office-day.png"
@@ -186,7 +188,9 @@ export default function Home() {
           width: '100%',
           height: '100%',
           opacity: isNightMode ? 1 : 0,
-          transition: 'opacity 0.8s ease'
+          transition: 'opacity 0.8s ease',
+          border: 'none',
+          outline: 'none'
         }}>
           <Image
             src="/office-night.png"
